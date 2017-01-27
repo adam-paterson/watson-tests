@@ -1,0 +1,36 @@
+{
+    "name": "adam-paterson/watson-tests",
+    "type": "library",
+    "homepage": "https://github.com/adam-paterson/watson-tests",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Adam Paterson",
+            "email": "hello@adampaterson.co.uk"
+        },
+        {
+            "name": "Watson Tests Contributors",
+            "homepage": "https://github.com/adam-paterson/watson-tests/contributors"
+        }
+    ],
+    "require": {
+        "php": "~5.6|~7.0",
+        "guzzle/plugin-mock": "^3.9",
+        "mockery/mockery": "^0.9.7",
+        "phpunit/phpunit": "^5.7",
+        "squizlabs/php_codesniffer": "^2.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "IBM\\Watson\\Tests\\": "src"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
