@@ -2,6 +2,7 @@
 
 namespace IBM\Watson\Tests;
 
+use Guzzle\Common\Event;
 use Mockery as m;
 use Guzzle\Http\Message\RequestInterface as GuzzleRequestInterface;
 use Guzzle\Http\Message\Response;
@@ -84,6 +85,25 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         }
 
         return MockPlugin::getMockFile($dir.'/Mock/'.$path);
+    }
+
+    public function setMockHttpResponse($paths)
+    {
+        $this->mockHttpRequests = [];
+        $that = $this;
+        $mock = new MockPlugin(null, true);
+        $this->getHttpClient()->getEventDispatcher()->removeSubscriber($mock);
+        $mock->getEventDispatcher()->addListener('mock.request', function(Event $event) use ($that) {
+            $that->addMockedHttpRequest($event['request']);
+        });
+
+        foreach ((array) $paths as $path) {
+            $mock->addResponse($this->getMockHttpResponse($path));
+        }
+
+        $this->getHttpClient()->getEventDispatcher()->addSubscriber($mock);
+
+        return $mock;
     }
 
     public function getHttpClient()
