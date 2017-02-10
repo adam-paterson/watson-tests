@@ -3,9 +3,9 @@
 namespace IBM\Watson\Tests;
 
 use Guzzle\Common\Event;
+use GuzzleHttp\Psr7\Response;
 use Mockery as m;
 use Guzzle\Http\Message\RequestInterface as GuzzleRequestInterface;
-use Guzzle\Http\Message\Response;
 use GuzzleHttp\Client as HttpClient;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Guzzle\Plugin\Mock\MockPlugin;
@@ -71,20 +71,15 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      * @param string $path Relative path to the mock response file
      * @return Response
      */
-    public function getMockHttpResponse($path)
+    public function getMockHttpResponse($path, $code = 200)
     {
-        if ($path instanceof Response) {
-            return $path;
-        }
-
         $ref = new \ReflectionObject($this);
         $dir = dirname($ref->getFileName());
-
-        if (!file_exists($dir.'/Mock/'.$path) && file_exists($dir.'/../Mock/'.$path)) {
-            return MockPlugin::getMockFile($dir.'/../Mock/'.$path);
+        // if mock file doesn't exist, check parent directory
+        if (!file_exists($dir . '/Mock/' . $path) && file_exists($dir . '/../Mock/' . $path)) {
+            return new Response($code, [], file_get_contents($dir . '/../Mock/' . $path));
         }
-
-        return MockPlugin::getMockFile($dir.'/Mock/'.$path);
+        return new Response($code, [], file_get_contents($dir . '/Mock/' . $path));
     }
 
     public function setMockHttpResponse($paths)
@@ -104,6 +99,16 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         $this->getHttpClient()->getEventDispatcher()->addSubscriber($mock);
 
         return $mock;
+    }
+
+    public function getMockHttpClientWithHistoryAndResponses(&$container, $responses)
+    {
+        $mock = new MockHandler($responses);
+        $stack = HandlerStack::create($mock);
+        $history = Middleware::history($container);
+        $stack->push($history);
+
+        return new Client(['handler' => $stack]);
     }
 
     public function getHttpClient()
